@@ -1,0 +1,23 @@
+{
+  "name": "AnnaDhaari — Urban Mobility Shield",
+  "short_name": "AnnaDhaari",
+  "description": "AI-powered multimodal transit shield with fare protection and street intelligence.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FEFCF6",
+  "theme_color": "#00695C",
+  "lang": "en-IN",
+  "categories": ["travel", "navigation", "utilities"],
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='80' fill='%2300695C'/><text x='256' y='400' font-size='380' text-anchor='middle' fill='white'>🛡</text></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "related_applications": [],
+  "prefer_related_applications": false
+}

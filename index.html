@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AnnaDhaari — Urban Mobility Shield</title>
+  <meta name="description"
+    content="AnnaDhaari: AI-powered multimodal transit with carpooling, fare protection, metro maps, and Navi street intelligence.">
+  <meta name="theme-color" content="#00695C">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐕</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Inter:wght@400;600;700;800&display=swap"
+    rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+  <a href="#appContent" class="skip-link">Skip to main content</a>
+  <div class="phone-frame" role="application" aria-label="AnnaDhaari Transit App">
+
+    <!-- Status Bar -->
+    <div class="status-bar" aria-hidden="true">
+      <span class="status-time" id="statusTime">11:27</span>
+      <div class="status-right">
+        <div class="coords" id="coordsBar"><span class="material-icons-round">my_location</span><span
+            id="latBar">12.9716°N</span><span id="lonBar">77.5946°E</span></div>
+        <button class="lang-toggle" id="langToggle" aria-label="Switch language"><span id="langLabel">EN</span></button>
+        <div class="status-icons">
+          <svg width="14" height="10" viewBox="0 0 16 12" fill="currentColor">
+            <path d="M1 8h2v4H1zM5 5h2v7H5zM9 3h2v9H9zM13 0h2v12h-2z" />
+          </svg>
+          <div class="battery-icon">
+            <div class="battery-level"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ SCREEN 1: ROUTE SELECTION ═══ -->
+    <div class="screen route-screen active" id="routeScreen">
+      <div class="route-hero">
+        <div class="brand-icon-lg"><span class="material-icons-round">shield</span></div>
+        <h1 class="hero-title">AnnaDhaari</h1>
+        <p class="hero-sub" data-i18n="hero_sub">Where are you going?</p>
+      </div>
+
+      <div class="route-form">
+        <div class="route-field">
+          <div class="route-marker from-marker">A</div>
+          <div class="route-input-wrap">
+            <label for="routeFrom" class="route-label">FROM</label>
+            <input type="text" id="routeFrom" placeholder="Your location..." value="Indiranagar"
+              data-testid="route-from">
+          </div>
+          <button class="gps-btn" id="gpsBtn" aria-label="Use GPS"><span
+              class="material-icons-round">gps_fixed</span></button>
+        </div>
+        <div class="route-divider">
+          <button class="swap-btn" id="swapBtn" aria-label="Swap"><span
+              class="material-icons-round">swap_vert</span></button>
+        </div>
+        <div class="route-field">
+          <div class="route-marker to-marker">B</div>
+          <div class="route-input-wrap">
+            <label for="routeTo" class="route-label">TO</label>
+            <input type="text" id="routeTo" placeholder="Destination..." value="MG Road Office" data-testid="route-to">
+          </div>
+          <button class="gmaps-btn" id="gmapsBtn" aria-label="Open in Google Maps"><span
+              class="material-icons-round">map</span></button>
+        </div>
+      </div>
+
+      <div class="route-coords-strip">
+        <span><span class="material-icons-round">place</span>12.9784°N, 77.6408°E</span>
+        <span class="material-icons-round">east</span>
+        <span><span class="material-icons-round">flag</span>12.9758°N, 77.6066°E</span>
+      </div>
+
+      <button class="find-routes-btn" id="findRoutesBtn" data-testid="find-routes-btn">
+        <span class="material-icons-round">search</span>
+        <span data-i18n="find_routes">FIND ROUTES</span>
+      </button>
+
+      <div class="recents">
+        <span class="recents-label" data-i18n="recent">RECENT</span>
+        <button class="recent-chip" data-from="Koramangala" data-to="Whitefield"><span
+            class="material-icons-round">history</span>Koramangala → Whitefield</button>
+        <button class="recent-chip" data-from="HSR Layout" data-to="Electronic City"><span
+            class="material-icons-round">history</span>HSR → Electronic City</button>
+      </div>
+    </div>
+
+    <!-- ═══ SCREEN 2: MODE OPTIONS ═══ -->
+    <div class="screen options-screen" id="optionsScreen">
+      <div class="options-header">
+        <button class="icon-btn" id="backToRoute" aria-label="Back"><span
+            class="material-icons-round">arrow_back</span></button>
+        <div class="options-route-summary">
+          <span class="ors-from" id="orsFrom">Indiranagar</span>
+          <span class="material-icons-round ors-arrow">east</span>
+          <span class="ors-to" id="orsTo">MG Road Office</span>
+        </div>
+        <span class="options-dist" id="optionsDist">5.2 km</span>
+      </div>
+      <div class="options-list" id="optionsList" role="list"></div>
+
+      <!-- Carpool Section -->
+      <div class="carpool-section" id="carpoolSection">
+        <div class="carpool-header">
+          <div class="carpool-icon-wrap"><span class="material-icons-round">group</span></div>
+          <div>
+            <h2 class="carpool-title" data-i18n="carpool_title">Carpool with Friends</h2>
+            <p class="carpool-sub" data-i18n="carpool_sub">Split fare, share ride</p>
+          </div>
+        </div>
+        <div class="friends-list" id="friendsList">
+          <div class="friend-card" data-friend="priya">
+            <div class="friend-avatar" style="background:#E91E63">PA</div>
+            <div class="friend-info"><span class="friend-name">Priya A.</span><span class="friend-route"><span
+                  class="material-icons-round">place</span>Indiranagar → Cubbon Park</span></div>
+            <div class="friend-match"><span class="match-pct">78%</span><span class="match-label">match</span></div>
+            <button class="invite-btn">INVITE</button>
+          </div>
+          <div class="friend-card" data-friend="rahul">
+            <div class="friend-avatar" style="background:#3F51B5">RK</div>
+            <div class="friend-info"><span class="friend-name">Rahul K.</span><span class="friend-route"><span
+                  class="material-icons-round">place</span>Domlur → MG Road</span></div>
+            <div class="friend-match"><span class="match-pct">92%</span><span class="match-label">match</span></div>
+            <button class="invite-btn">INVITE</button>
+          </div>
+          <div class="friend-card" data-friend="sneha">
+            <div class="friend-avatar" style="background:#FF5722">SM</div>
+            <div class="friend-info"><span class="friend-name">Sneha M.</span><span class="friend-route"><span
+                  class="material-icons-round">place</span>Indiranagar → Brigade Rd</span></div>
+            <div class="friend-match"><span class="match-pct">85%</span><span class="match-label">match</span></div>
+            <button class="invite-btn">INVITE</button>
+          </div>
+        </div>
+        <button class="add-friend-btn" id="addFriendBtn"><span class="material-icons-round">person_add</span><span
+            data-i18n="add_friends">Add more friends</span></button>
+        <div class="carpool-savings" id="carpoolSavings" style="display:none;"><span
+            class="material-icons-round">savings</span>
+          <div class="savings-info"><span class="savings-title">Carpool Savings</span><span class="savings-amt"
+              id="savingsAmt">Save ₹25/person</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ SCREEN 3: JOURNEY VIEW ═══ -->
+    <div class="screen journey-screen" id="journeyScreen">
+      <header class="app-header">
+        <div class="header-top">
+          <button class="icon-btn" id="backToOptions" aria-label="Back"><span
+              class="material-icons-round">arrow_back</span></button>
+          <div class="brand-sm"><span class="brand-title-sm">AnnaDhaari</span><span class="active-mode-badge"
+              id="activeModeLabel">AUTO</span></div>
+          <button class="icon-btn" id="notifBtn" aria-label="Notifications"><span
+              class="material-icons-round">notifications</span><span class="notif-dot"></span></button>
+        </div>
+        <div class="journey-route-bar">
+          <span class="jrb-from" id="jrbFrom">Indiranagar</span><span
+            class="material-icons-round jrb-arrow">east</span><span class="jrb-to" id="jrbTo">MG Road Office</span>
+          <span class="jrb-coords" id="jrbCoords">12.97°N, 77.64°E → 12.97°N, 77.60°E</span>
+        </div>
+      </header>
+
+      <main class="app-content" id="appContent" role="main">
+        <!-- Route Banner -->
+        <div class="route-banner card" id="routeBanner">
+          <div class="rb-top">
+            <span class="material-icons-round rb-icon">auto_awesome</span>
+            <div class="rb-info"><span class="rb-label">BEST ROUTE</span><span class="rb-title" id="rbTitle">Auto →
+                Metro → Walk</span></div>
+            <div class="rb-badge" id="rbBadge">FASTEST</div>
+          </div>
+          <div class="rb-stats">
+            <div class="rb-stat"><span class="material-icons-round">schedule</span><span id="rbTime">~21 min</span>
+            </div>
+            <div class="rb-stat"><span class="material-icons-round">payments</span><span id="rbCost">₹60</span></div>
+            <div class="rb-stat"><span class="material-icons-round">straighten</span><span id="rbDist">5.2 km</span>
+            </div>
+            <div class="rb-stat"><span class="material-icons-round">safety_check</span><span id="rbSafety">Safe</span>
+            </div>
+          </div>
+          <div class="rb-riders" id="rbRiders" style="display:none;"><span
+              class="material-icons-round">group</span><span class="rb-riders-text" id="rbRidersText">Riding with
+              Rahul</span><span class="rb-split" id="rbSplit">₹30 each</span></div>
+          <button class="rb-gmaps" id="openGmaps" aria-label="Open route in Google Maps"><span
+              class="material-icons-round">open_in_new</span>Open in Google Maps</button>
+        </div>
+
+        <!-- Google Map Embed / Canvas -->
+        <section class="map-section card" aria-label="Interactive route map">
+          <div class="map-tabs">
+            <button class="map-tab active" id="tabCanvas" data-tab="canvas">Route View</button>
+            <button class="map-tab" id="tabGmaps" data-tab="gmaps">Google Maps</button>
+          </div>
+          <div class="map-container" id="mapContainer">
+            <canvas id="mapCanvas" role="img" aria-label="Route map with checkpoints"></canvas>
+            <div class="map-overlay-top">
+              <div class="live-badge"><span class="live-pulse"></span>LIVE</div>
+              <div class="congestion-badge" id="congestionBadge"><span class="material-icons-round">warning</span><span
+                  id="congestionText">+10 MIN</span></div>
+            </div>
+            <div class="map-alerts" id="mapAlerts">
+              <button class="map-alert-chip cop-chip active" id="copChip"><span
+                  class="material-icons-round">local_police</span><span>2 Checkpoints</span></button>
+              <button class="map-alert-chip congestion-chip active" id="congestionChip"><span
+                  class="material-icons-round">traffic</span><span>3 Zones</span></button>
+              <button class="map-alert-chip path-chip" id="pathChip"><span
+                  class="material-icons-round">timeline</span><span>Shortest</span></button>
+            </div>
+            <div class="map-controls">
+              <button class="map-ctrl-btn" id="mapZoomIn" aria-label="Zoom in"><span
+                  class="material-icons-round">add</span></button>
+              <button class="map-ctrl-btn" id="mapZoomOut" aria-label="Zoom out"><span
+                  class="material-icons-round">remove</span></button>
+              <button class="map-ctrl-btn" id="mapRecenter" aria-label="Recenter"><span
+                  class="material-icons-round">my_location</span></button>
+            </div>
+            <div class="map-legend" id="mapLegend">
+              <span class="legend-item"><span class="lsw auto-sw"></span>Auto</span>
+              <span class="legend-item"><span class="lsw metro-sw"></span>Metro</span>
+              <span class="legend-item"><span class="lsw walk-sw"></span>Walk</span>
+              <span class="legend-item"><span class="lsw cop-sw"></span>Cops</span>
+              <span class="legend-item"><span class="lsw cong-sw"></span>Jam</span>
+            </div>
+            <div class="map-coords" id="mapCoordsLive">12.9716°N, 77.5946°E</div>
+            <div class="map-info-panel" id="mapInfoPanel" style="display:none;">
+              <div class="mip-header"><span class="material-icons-round" id="mipIcon">place</span><span
+                  class="mip-title" id="mipTitle">Location</span><button class="mip-close" id="mipClose"><span
+                    class="material-icons-round">close</span></button></div>
+              <div class="mip-body" id="mipBody">Details</div>
+            </div>
+          </div>
+          <!-- Google Maps iframe (hidden by default) -->
+          <div class="gmap-embed" id="gmapEmbed" style="display:none;">
+            <iframe id="gmapIframe" width="100%" height="100%" style="border:0;" loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade" src="about:blank" title="Google Maps route"></iframe>
+          </div>
+        </section>
+
+        <!-- Metro Section (shown for metro/custom modes) -->
+        <section class="card metro-card" id="metroCard" style="display:none;">
+          <div class="card-header-brutal metro-header">
+            <div class="card-tag metro-tag">METRO</div>
+            <h2 class="card-title-brutal" data-i18n="metro_info">Metro Information</h2>
+          </div>
+          <div class="metro-body">
+            <div class="metro-line-map">
+              <div class="metro-line-label purple-label">PURPLE LINE</div>
+              <div class="metro-stations" id="metroStations">
+                <div class="metro-stn">
+                  <div class="stn-dot purple-dot active-stn"></div><span>Halasuru</span><span
+                    class="stn-time">Boarding</span>
+                </div>
+                <div class="metro-stn-line purple-line-seg"></div>
+                <div class="metro-stn">
+                  <div class="stn-dot purple-dot"></div><span>Trinity</span><span class="stn-time">+2 min</span>
+                </div>
+                <div class="metro-stn-line purple-line-seg"></div>
+                <div class="metro-stn">
+                  <div class="stn-dot purple-dot active-stn"></div><span>MG Road</span><span class="stn-time">+6
+                    min</span>
+                </div>
+              </div>
+            </div>
+            <div class="metro-schedule">
+              <div class="sched-row"><span class="material-icons-round">schedule</span><span class="sched-label"
+                  data-i18n="next_train">Next Train</span><span class="sched-val" id="nextTrain">3 min</span></div>
+              <div class="sched-row"><span class="material-icons-round">update</span><span class="sched-label"
+                  data-i18n="frequency">Frequency</span><span class="sched-val">Every 5 min</span></div>
+              <div class="sched-row"><span class="material-icons-round">access_time</span><span class="sched-label"
+                  data-i18n="last_train">Last Train</span><span class="sched-val">11:00 PM</span></div>
+              <div class="sched-row"><span class="material-icons-round">payments</span><span class="sched-label"
+                  data-i18n="metro_fare">Metro Fare</span><span class="sched-val">₹20</span></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Timeline -->
+        <section class="card timeline-card" id="timelineCard">
+          <div class="card-header-brutal">
+            <div class="card-tag" id="timelineTag">OPTIMIZED</div>
+            <h2 class="card-title-brutal" data-i18n="journey_timeline">Journey Timeline</h2><span class="card-meta"
+              id="timelineMeta">3 segments</span>
+          </div>
+          <div class="timeline-wrapper" id="timelineWrapper" role="list"></div>
+        </section>
+
+        <!-- Zone Alert -->
+        <section class="card zone-alert" id="zoneAlert" style="display:none;">
+          <div class="zone-header"><span class="material-icons-round zone-icon" id="zoneIcon">info</span>
+            <div>
+              <h3 class="zone-title" id="zoneTitle">Zone Info</h3>
+              <p class="zone-desc" id="zoneDesc">Details</p>
+            </div>
+          </div>
+          <div class="zone-tips" id="zoneTips"></div>
+        </section>
+
+        <!-- Fare Intelligence (interactive) -->
+        <section class="card fare-card" id="fareCard" style="display:none;">
+          <div class="card-header-brutal fare-header">
+            <div class="card-tag fare-tag">FARE SHIELD</div>
+            <h2 class="card-title-brutal" data-i18n="fare_intel">Fare Intelligence</h2>
+          </div>
+          <div class="fare-body">
+            <div class="fare-battle">
+              <div class="fare-block legal-block">
+                <div class="fare-hdr"><span class="material-icons-round">verified</span><span
+                    data-i18n="legal">LEGAL</span></div>
+                <div class="fare-amt legal-amt" id="legalFare">₹45</div>
+              </div>
+              <div class="fare-vs-bar"><span>VS</span></div>
+              <div class="fare-block scam-block">
+                <div class="fare-hdr"><span class="material-icons-round">dangerous</span><span
+                    data-i18n="asking">ASKING</span></div>
+                <div class="fare-input-wrap">
+                  <span class="fare-currency">₹</span>
+                  <input type="number" id="scamFareInput" class="scam-fare-input" value="150" min="0" max="9999"
+                    aria-label="Enter fare being asked" data-testid="scam-fare-input">
+                </div>
+                <div class="fare-scam-tag" id="fareScamTag" role="alert">SCAM!</div>
+              </div>
+            </div>
+            <div class="overcharge-bar" id="overchargeBar">
+              <span class="material-icons-round">trending_up</span>
+              <strong id="overchargeText">233% overcharge</strong> — <span data-i18n="navi_protects">Navi protects
+                you</span>
+            </div>
+            <div class="fare-tip" data-i18n="fare_tip">💡 Type the fare the driver is asking to check if it's fair</div>
+          </div>
+        </section>
+
+        <div class="bottom-spacer"></div>
+      </main>
+
+      <!-- Bottom Action Bar -->
+      <div class="action-bar">
+        <button class="start-btn" id="startJourneyBtn"><span class="material-icons-round start-ico">shield</span><span
+            class="start-label" data-i18n="start_journey">START PROTECTED JOURNEY</span>
+          <div class="start-arrow"><span class="material-icons-round">east</span></div>
+        </button>
+        <button class="sos-btn" id="sosBtn" aria-label="Emergency SOS"><span class="sos-text">SOS</span>
+          <div class="sos-ring"></div>
+        </button>
+      </div>
+    </div>
+
+    <!-- ═══ NAVI ═══ -->
+    <div class="navi-float" id="naviFloat" role="button" tabindex="0" aria-label="Navi companion">
+      <div class="navi-glow" id="naviGlow"></div>
+      <svg viewBox="0 0 90 100" class="navi-svg" id="naviSvg">
+        <ellipse cx="45" cy="72" rx="20" ry="13" fill="#D4A574" stroke="#1a1a1a" stroke-width="2.5" />
+        <ellipse cx="45" cy="73" rx="13" ry="8" fill="#E8C4A0" opacity="0.5" />
+        <path id="naviTail" d="M65 65 Q78 50 73 42" fill="none" stroke="#C49660" stroke-width="3.5"
+          stroke-linecap="round">
+          <animateTransform attributeName="transform" type="rotate" values="0 65 65;10 65 65;0 65 65;-6 65 65;0 65 65"
+            dur="1.2s" repeatCount="indefinite" />
+        </path>
+        <ellipse cx="57" cy="80" rx="6" ry="8" fill="#C49660" stroke="#1a1a1a" stroke-width="1.5" />
+        <ellipse cx="33" cy="80" rx="6" ry="8" fill="#C49660" stroke="#1a1a1a" stroke-width="1.5" />
+        <rect x="37" y="78" width="6" height="10" rx="3" fill="#D4A574" stroke="#1a1a1a" stroke-width="1.5" />
+        <rect x="47" y="78" width="6" height="10" rx="3" fill="#D4A574" stroke="#1a1a1a" stroke-width="1.5" />
+        <ellipse cx="40" cy="87" rx="4" ry="2.5" fill="#E8C4A0" stroke="#1a1a1a" stroke-width="1" />
+        <ellipse cx="50" cy="87" rx="4" ry="2.5" fill="#E8C4A0" stroke="#1a1a1a" stroke-width="1" />
+        <path d="M35 60 Q45 52 55 60" fill="#D4A574" stroke="#1a1a1a" stroke-width="1.5" />
+        <ellipse cx="45" cy="38" rx="17" ry="16" fill="#D4A574" stroke="#1a1a1a" stroke-width="2.5" />
+        <ellipse cx="45" cy="46" rx="10" ry="7" fill="#E8C4A0" stroke="#1a1a1a" stroke-width="1.2" />
+        <ellipse cx="45" cy="43" rx="3.5" ry="2.5" fill="#1a1a1a" />
+        <ellipse cx="44" cy="42.5" rx="1.2" ry="0.8" fill="#555" />
+        <path id="naviMouth" d="M40 47 Q45 51 50 47" fill="none" stroke="#1a1a1a" stroke-width="1.3"
+          stroke-linecap="round" />
+        <g id="naviEyes">
+          <ellipse cx="36" cy="34" rx="6" ry="6.5" fill="white" stroke="#1a1a1a" stroke-width="1.8" />
+          <ellipse cx="37.5" cy="33.5" rx="3" ry="3.5" fill="#3E2723">
+            <animate attributeName="cy" values="33.5;32.5;33.5" dur="3s" repeatCount="indefinite" />
+          </ellipse>
+          <circle cx="38.5" cy="31.5" r="1.5" fill="white" />
+          <ellipse cx="54" cy="34" rx="6" ry="6.5" fill="white" stroke="#1a1a1a" stroke-width="1.8" />
+          <ellipse cx="55.5" cy="33.5" rx="3" ry="3.5" fill="#3E2723">
+            <animate attributeName="cy" values="33.5;32.5;33.5" dur="3s" repeatCount="indefinite" />
+          </ellipse>
+          <circle cx="56.5" cy="31.5" r="1.5" fill="white" />
+        </g>
+        <line id="naviBrowL" x1="30" y1="26" x2="40" y2="27" stroke="#1a1a1a" stroke-width="2.5"
+          stroke-linecap="round" />
+        <line id="naviBrowR" x1="50" y1="27" x2="60" y2="26" stroke="#1a1a1a" stroke-width="2.5"
+          stroke-linecap="round" />
+        <path d="M26 28 L18 6 L38 24" fill="#D4A574" stroke="#1a1a1a" stroke-width="2.5" stroke-linejoin="round">
+          <animateTransform attributeName="transform" type="rotate" values="0 26 28;-4 26 28;0 26 28;3 26 28;0 26 28"
+            dur="2s" repeatCount="indefinite" />
+        </path>
+        <path d="M29 26 L23 11 L36 23" fill="#FFAB91" opacity="0.6" />
+        <path d="M64 28 L72 6 L52 24" fill="#D4A574" stroke="#1a1a1a" stroke-width="2.5" stroke-linejoin="round">
+          <animateTransform attributeName="transform" type="rotate" values="0 64 28;4 64 28;0 64 28;-3 64 28;0 64 28"
+            dur="2.5s" repeatCount="indefinite" />
+        </path>
+        <path d="M61 26 L67 11 L54 23" fill="#FFAB91" opacity="0.6" />
+        <path d="M32 56 Q45 62 58 56" fill="none" stroke="#00695C" stroke-width="3" stroke-linecap="round" />
+        <circle cx="45" cy="59" r="3.5" fill="#FFD54F" stroke="#1a1a1a" stroke-width="1.5" /><text x="45" y="61.5"
+          font-size="5" fill="#1a1a1a" text-anchor="middle" font-weight="bold">N</text>
+      </svg>
+      <div class="navi-speech-bubble" id="naviSpeech" aria-live="polite"><span id="naviSpeechText">Where to? 🐾</span>
+        <div class="speech-arrow"></div>
+      </div>
+      <div class="navi-mood-indicator" id="naviMoodTag"><span class="material-icons-round"
+          id="naviMoodIcon">mood</span><span id="naviMoodText">Happy</span></div>
+    </div>
+
+    <!-- SOS Modal -->
+    <div class="modal-overlay" id="sosModal" role="dialog" aria-modal="true" aria-labelledby="sosTitle">
+      <div class="modal-sheet">
+        <div class="modal-handle"></div>
+        <div class="modal-hdr sos-hdr"><span class="material-icons-round">emergency</span>
+          <h3 id="sosTitle">SAFETY HUB</h3>
+        </div>
+        <div class="modal-body">
+          <button class="safety-row" id="shareLocBtn">
+            <div class="sr-icon sr-share"><span class="material-icons-round">share_location</span></div>
+            <div class="sr-info"><span class="sr-title" data-i18n="share_loc">Share Live Location</span><span
+                class="sr-desc">Send to emergency contacts</span></div><span
+              class="material-icons-round sr-chev">chevron_right</span>
+          </button>
+          <button class="safety-row" id="panicBtn">
+            <div class="sr-icon sr-panic"><span class="material-icons-round">crisis_alert</span></div>
+            <div class="sr-info"><span class="sr-title" data-i18n="panic">Panic Alert</span><span class="sr-desc">Alert
+                authorities + contacts</span></div><span class="material-icons-round sr-chev">chevron_right</span>
+          </button>
+          <button class="safety-row" id="policeBtn">
+            <div class="sr-icon sr-police"><span class="material-icons-round">local_police</span></div>
+            <div class="sr-info"><span class="sr-title" data-i18n="call_police">Call Police</span><span
+                class="sr-desc">Nearest station</span></div><span
+              class="material-icons-round sr-chev">chevron_right</span>
+          </button>
+        </div>
+        <button class="modal-close" id="closeSos">CLOSE</button>
+      </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast" role="alert" aria-live="assertive"><span
+        class="material-icons-round toast-ic">check_circle</span><span id="toastMsg">Done</span></div>
+  </div>
+  <script src="app.js"></script>
+</body>
+
+</html>
